@@ -131,6 +131,7 @@ class RayUtils:
         if overall < RAY_MAX_ACTOR_LIMIT:
             # create actors
             actors = [operator() for _ in range(n_actors)]
+            # get the amount of actors to list
             n_list = min(overall + 10, RAY_MAX_ACTOR_LIMIT)
             # waiting for all actors to become ready
             alive = []
