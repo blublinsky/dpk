@@ -155,8 +155,8 @@ class RayUtils:
                 raise UnrecoverableException(f"Created {n_actors}, alive {len(alive)}. Too few actors were created")
         else:
             raise UnrecoverableException(
-                f"Overall number of actors of class {cls_name} is {overall}. "
-                f"Too many actors to create, greater then {RAY_MAX_ACTOR_LIMIT}"
+                f"Desired overall number of actors of class {cls_name} is {overall}. "
+                f"currently {c_len} actors, requesting {n_actors}"
             )
 
     @staticmethod
