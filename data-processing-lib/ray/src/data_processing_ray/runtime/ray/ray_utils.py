@@ -15,7 +15,7 @@ import time
 from typing import Any
 
 import ray
-from data_processing.utils import GB, UnrecoverableException, get_logger
+from data_processing.utils import GB, UnrecoverableException
 from ray.actor import ActorHandle
 from ray.exceptions import RayError
 from ray.experimental.state.api import list_actors
@@ -37,10 +37,10 @@ class RayUtils:
 
     @staticmethod
     def get_available_resources(
-        available_cpus_gauge: Gauge = None,
-        available_gpus_gauge: Gauge = None,
-        available_memory_gauge: Gauge = None,
-        object_memory_gauge: Gauge = None,
+            available_cpus_gauge: Gauge = None,
+            available_gpus_gauge: Gauge = None,
+            available_memory_gauge: Gauge = None,
+            object_memory_gauge: Gauge = None,
     ) -> dict[str, Any]:
         """
         Get currently available cluster resources
@@ -94,13 +94,11 @@ class RayUtils:
         for node in nodes:
             if node["Alive"]:
                 nnodes += 1
-        if available_nodes_gauge is not None:
-            available_nodes_gauge.set(nnodes)
         return nnodes
 
     @staticmethod
     def create_actors(
-        clazz: type, params: dict[str, Any], actor_options: dict[str, Any], n_actors: int, creation_delay: int = 0
+            clazz: type, params: dict[str, Any], actor_options: dict[str, Any], n_actors: int, creation_delay: int = 0
     ) -> list[ActorHandle]:
         """
         Create a set of actors
@@ -161,16 +159,16 @@ class RayUtils:
 
     @staticmethod
     def process_files(
-        executors: ActorPool,
-        files: list[str],
-        print_interval: int,
-        files_in_progress_gauge: Gauge,
-        files_completed_gauge: Gauge,
-        available_cpus_gauge: Gauge,
-        available_gpus_gauge: Gauge,
-        available_memory_gauge: Gauge,
-        object_memory_gauge: Gauge,
-        logger: logging.Logger,
+            executors: ActorPool,
+            files: list[str],
+            print_interval: int,
+            files_in_progress_gauge: Gauge,
+            files_completed_gauge: Gauge,
+            available_cpus_gauge: Gauge,
+            available_gpus_gauge: Gauge,
+            available_memory_gauge: Gauge,
+            object_memory_gauge: Gauge,
+            logger: logging.Logger,
     ) -> int:
         """
         Process files
@@ -207,7 +205,7 @@ class RayUtils:
                 while True:
                     # we can have several workers fail here
                     try:
-                        _ = executors.get_next_unordered()
+                        res = executors.get_next_unordered()
                         break
                     except Exception as e:
                         if isinstance(e, RayError):
