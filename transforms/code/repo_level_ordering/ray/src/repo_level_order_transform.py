@@ -220,7 +220,7 @@ class RepoLevelOrderRuntime(DefaultRayTransformRuntime):
 
     def get_transform_config(
         self,
-        data_access_factory: DataAccessFactoryBase,
+        data_access_factory: list[DataAccessFactoryBase],
         statistics: ActorHandle,
         files: list[str],
     ) -> dict[str, Any]:
@@ -233,13 +233,13 @@ class RepoLevelOrderRuntime(DefaultRayTransformRuntime):
         """
         self.logger.info("=> get_transform_config started")
         self.store_backend_dir = self.params[store_dir_key]
-        data_access = data_access_factory.create_data_access()
-        self.input_folder = data_access.input_folder
-        self.output_folder = data_access.output_folder
+        data_access = data_access_factory[0].create_data_access()
+        data_access_out = data_access_factory[1].create_data_access()
+        self.input_folder = data_access.get_input_folder()
+        self.output_folder = data_access_out.get_output_folder()
         # Keep s3_creds
         self.daf = data_access_factory
-        self.s3_cred = data_access_factory.s3_cred
-        self.data_access = data_access
+        self.s3_cred = data_access_factory[0].s3_cred
         self._initialize_store_params()
         self.store_params = self.params[store_params_key]
         self.logger.info("<= get_transform_config")

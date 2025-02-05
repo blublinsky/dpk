@@ -56,7 +56,7 @@ class HashFilter:
             self.data_access = None
             self.data_access_out = None
             self.hashes = set()
-        if data_access_factory[0] is None or data_access_factory[1] is None:
+        elif data_access_factory[0] is None or data_access_factory[1] is None:
             self.data_access = None
             self.data_access_out = None
             self.hashes = set()
