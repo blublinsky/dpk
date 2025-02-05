@@ -67,7 +67,7 @@ class ProfilerRuntime(DefaultSparkTransformRuntime):
         self.logger = get_logger(__name__)
 
     def get_transform_config(
-            self, partition: int, data_access_factory: DataAccessFactoryBase, statistics: TransformStatistics
+            self, partition: int, data_access_factory: list[DataAccessFactoryBase], statistics: TransformStatistics
     ) -> dict[str, Any]:
         """
         Get the dictionary of configuration that will be provided to the transform's initializer.

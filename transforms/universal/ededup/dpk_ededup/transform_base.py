@@ -52,6 +52,10 @@ class HashFilter:
         self.logger = get_logger(__name__)
         self.actor_id = params.get("id", 1)
         data_access_factory = params.get("data_access_factory", None)
+        if data_access_factory is None:
+            self.data_access = None
+            self.data_access_out = None
+            self.hashes = set()
         if data_access_factory[0] is None or data_access_factory[1] is None:
             self.data_access = None
             self.data_access_out = None
@@ -105,16 +109,20 @@ class HashFilter:
         Snapshot content
         :return: None
         """
-        try:
-            # pickle content
-            b_doc = pickle.dumps(self.hashes)
-            # Save it
-            self.data_access_out.save_file(
-                f"{SnapshotUtils.get_snapshot_folder(self.data_access_out)}hash_collector_{self.actor_id}", b_doc
-            )
-        except Exception as e:
-            self.logger.warning(f"Failed to snapshot doc collector {self.actor_id} with exception {e}")
-            raise e
+        if self.data_access_out is not None:
+            try:
+                # pickle content
+                b_doc = pickle.dumps(self.hashes)
+                # Save it
+                self.data_access_out.save_file(
+                    f"{SnapshotUtils.get_snapshot_folder(self.data_access_out)}hash_collector_{self.actor_id}", b_doc
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to snapshot doc collector {self.actor_id} with exception {e}")
+                raise e
+        else:
+            self.logger.warning(f"data access is not defined - skipping snapshot doc collector {self.actor_id}")
+
 
 
 class EdedupTransformBase(AbstractTableTransform):

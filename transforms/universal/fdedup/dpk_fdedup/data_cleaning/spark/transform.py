@@ -43,7 +43,7 @@ class DataCleaningSparkRuntime(DefaultSparkTransformRuntime):
         self.logger = get_logger(__name__)
 
     def get_transform_config(
-        self, partition: int, data_access_factory: DataAccessFactoryBase, statistics: TransformStatistics
+        self, partition: int, data_access_factory: list[DataAccessFactoryBase], statistics: TransformStatistics
     ) -> dict[str, Any]:
         """
         Download the table of duplicate document ids that will be provided to the
@@ -58,15 +58,15 @@ class DataCleaningSparkRuntime(DefaultSparkTransformRuntime):
         :param files - list of files to process
         :return: dictionary of transform init params
         """
-        data_access = data_access_factory.create_data_access()
+        data_access_out = data_access_factory[1].create_data_access()
         dc_data_access = self.params.get(dataclean_data_access_key, None)
         if dc_data_access is None:
             dc_daf = self.params.get(dataclean_data_factory_key, None)
             if dc_daf is None:
                 raise RuntimeError(f"Missing configuration value for key {dataclean_data_factory_key}")
             dc_data_access = dc_daf.create_data_access()
-        if dc_data_access.output_folder is None:
-            dc_data_access.output_folder = data_access.output_folder
+        if dc_data_access.get_output_folder() is None:
+            dc_data_access.output_folder = data_access_out.get_output_folder()
         duplicate_list_location = self.params.get(duplicate_list_location_key, duplicate_list_location_default)
         if not duplicate_list_location.startswith("/"):
             out_paths = dc_data_access.output_folder.rstrip("/").split("/")

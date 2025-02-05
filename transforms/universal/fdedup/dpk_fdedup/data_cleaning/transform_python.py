@@ -58,9 +58,7 @@ class DataCleaningPythonRuntime(DefaultPythonTransformRuntime):
         :param files - list of files to process
         :return: dictionary of transform init params
         """
-        data_access = data_access_factory[0].create_data_access()
         data_access_out = data_access_factory[1].create_data_access()
-        data_access.set_output_data_access(data_access_out)
         dc_data_access = self.params.get(dataclean_data_access_key, None)
         if dc_data_access is None:
             dc_daf = self.params.get(dataclean_data_factory_key, None)
