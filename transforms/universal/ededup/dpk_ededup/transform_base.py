@@ -52,11 +52,14 @@ class HashFilter:
         self.logger = get_logger(__name__)
         self.actor_id = params.get("id", 1)
         data_access_factory = params.get("data_access_factory", None)
-        if data_access_factory is None:
+        if data_access_factory[0] is None or data_access_factory[1] is None:
             self.data_access = None
+            self.data_access_out = None
             self.hashes = set()
         else:
-            self.data_access = data_access_factory.create_data_access()
+            self.data_access = data_access_factory[0].create_data_access()
+            self.data_access_out = data_access_factory[1].create_data_access()
+            self.data_access.set_output_data_access(self.data_access_out)
             snapshot = params.get("snapshot", None)
             if snapshot is None:
                 self.hashes = set()
@@ -106,8 +109,8 @@ class HashFilter:
             # pickle content
             b_doc = pickle.dumps(self.hashes)
             # Save it
-            self.data_access.save_file(
-                f"{SnapshotUtils.get_snapshot_folder(self.data_access)}hash_collector_{self.actor_id}", b_doc
+            self.data_access_out.save_file(
+                f"{SnapshotUtils.get_snapshot_folder(self.data_access_out)}hash_collector_{self.actor_id}", b_doc
             )
         except Exception as e:
             self.logger.warning(f"Failed to snapshot doc collector {self.actor_id} with exception {e}")

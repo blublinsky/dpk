@@ -78,6 +78,7 @@ class AbstractDataAccessFactoryTests:
         args = parser.parse_args()
         daf.apply_input_params(args)
         data_access = daf.create_data_access()
+        data_access.set_output_data_access(data_access)
         files, metadata, _ = data_access.get_files_to_process()
         if isinstance(expected_files, int):
             assert len(files) == expected_files

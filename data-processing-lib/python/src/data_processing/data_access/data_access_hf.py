@@ -9,11 +9,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ################################################################################
-
-import gzip
 import json
-import os
-from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
@@ -58,10 +54,10 @@ class DataAccessHF(DataAccess):
             self.output_folder = None
         else:
             self.input_folder = hf_config["input_folder"]
-            if self.input_folder[-1] == "/":
+            if self.input_folder is not None and self.input_folder[-1] == "/":
                 self.input_folder = self.input_folder[:-1]
             self.output_folder = hf_config["output_folder"]
-            if self.output_folder[-1] == "/":
+            if self.output_folder is not None and self.output_folder[-1] == "/":
                 self.output_folder = self.output_folder[:-1]
         self.hf_config = hf_config
         self.fs = HfFileSystem(token=hf_config["hf_token"])
@@ -181,7 +177,7 @@ class DataAccessHF(DataAccess):
         two additional elements:
             "source"
             "target"
-        are filled bu implementation
+        are filled by implementation
         :return: a dictionary as
         defined https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html
         in the case of failure dict is None
@@ -281,4 +277,3 @@ class DataAccessHF(DataAccess):
         # write new Readme file
         with self.fs.open(path=path, mode="w", newline="", encoding="utf-8") as f:
             f.write(content)
-

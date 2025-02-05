@@ -31,6 +31,7 @@ class TestInit:
         "output_folder": os.path.join(os.sep, "tmp", "output_guf"),
     }
     dal = DataAccessLocal(path_dict, d_sets=["dset1", "dset2"], checkpoint=True, m_files=-1)
+    dal.set_output_data_access(dal)
     size_stat_dict_empty = {"max_file_size": 0.0, "min_file_size": float(GB), "total_file_size": 0.0}
     size_stat_dict = {"max_file_size": 0.0, "min_file_size": 0.0, "total_file_size": 0.0}
     size_stat_dict_1 = {"max_file_size": 1.0, "min_file_size": 0.0, "total_file_size": 1.0}
@@ -444,6 +445,7 @@ class TestGetOutputLocation(TestInit):
             "output_folder": os.path.join(os.sep, "tmp", "output_guf"),
         }
         dal = DataAccessLocal(path_dict)
+        dal.set_output_data_access(dal)
         in_path = os.path.abspath(os.path.join("..", "input_guf", "path", "to", "f.parquet"))
         out_path = dal.get_output_location(in_path)
         assert out_path == os.path.join(dal.output_folder, "path", "to", "f.parquet")

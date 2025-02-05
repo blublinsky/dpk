@@ -36,7 +36,7 @@ def _execution_resources() -> dict[str, Any]:
     Get Execution resource
     :return: tuple of cpu/memory usage
     """
-    # Getting loadover15 minutes
+    # Getting load over15 minutes
     load1, load5, load15 = psutil.getloadavg()
     # Getting memory used
     mused = round(psutil.virtual_memory()[3] / GB, 2)
@@ -49,7 +49,7 @@ def _execution_resources() -> dict[str, Any]:
 
 
 def orchestrate(
-    data_access_factory: DataAccessFactoryBase,
+    data_access_factory: list[DataAccessFactoryBase],
     runtime_config: PythonTransformRuntimeConfiguration,
     execution_config: PythonTransformExecutionConfiguration,
 ) -> int:
@@ -66,10 +66,12 @@ def orchestrate(
     # create statistics
     statistics = TransformStatistics()
     # create data access
-    data_access = data_access_factory.create_data_access()
-    if data_access is None:
+    data_access = data_access_factory[0].create_data_access()
+    data_access_out = data_access_factory[1].create_data_access()
+    if data_access is None or data_access_out is None:
         logger.error("No DataAccess instance provided - exiting")
         return 1
+    data_access.set_output_data_access(data_access_out)
     # create additional execution parameters
     runtime = runtime_config.create_transform_runtime()
     is_folder = issubclass(runtime_config.get_transform_class(), AbstractFolderTransform)
@@ -143,14 +145,14 @@ def orchestrate(
             },
             "code": execution_config.code_location,
             "job_input_params": input_params
-            | data_access_factory.get_input_params()
+            | data_access_factory[0].get_input_params()
             | execution_config.get_input_params(),
             "execution_stats": _execution_resources() |
-                               {"execution time, min": round((time.time() - start_time) / 60.0, 3)},
+            {"execution time, min": round((time.time() - start_time) / 60.0, 3)},
             "job_output_stats": stats,
         }
         logger.debug(f"Saving job metadata: {metadata}.")
-        data_access.save_job_metadata(metadata)
+        data_access_out.save_job_metadata(metadata)
         logger.debug("Saved job metadata.")
         return return_code
     except Exception as e:
@@ -161,7 +163,7 @@ def orchestrate(
 def _process_transforms(
     files: list[str],
     print_interval: int,
-    data_access_factory: DataAccessFactoryBase,
+    data_access_factory: list[DataAccessFactoryBase],
     statistics: TransformStatistics,
     transform_params: dict[str, Any],
     transform_class: type[AbstractTransform],
@@ -208,7 +210,7 @@ def _process_transforms_multiprocessor(
     files: list[str],
     size: int,
     print_interval: int,
-    data_access_factory: DataAccessFactoryBase,
+    data_access_factory: list[DataAccessFactoryBase],
     transform_params: dict[str, Any],
     transform_class: type[AbstractTransform],
     is_folder: bool

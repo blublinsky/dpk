@@ -27,12 +27,14 @@ local_conf = {
 }
 
 profiler_params = {doc_column_name_key: "contents",
-                   "aggregator": DataAggregator({"data_access_factory": DataAccessFactory()})}
+                   "aggregator": DataAggregator({"data_access_factory": [DataAccessFactory(),
+                                                                         DataAccessFactory()]})}
 
 if __name__ == "__main__":
     # Here we show how to run outside of ray
     # Filter transform needs a DataAccess to ready the domain list.
     data_access = DataAccessLocal(local_conf)
+    data_access.set_output_data_access(data_access)
     # Create and configure the transform.
     transform = ProfilerTransform(profiler_params)
     # Use the local data access to read a parquet table.

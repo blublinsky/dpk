@@ -12,6 +12,7 @@
 
 import random
 from typing import Any
+from typing_extensions import Self
 
 import pyarrow as pa
 from data_processing.utils import KB, MB, GB, TransformUtils, get_logger
@@ -46,6 +47,13 @@ class DataAccess:
         self.files_to_use = files_to_use
         self.files_to_checkpoint = files_to_checkpoint
         self.logger = get_logger(__name__)
+        self.output_data_access = None
+
+    def get_output_data_access(self) -> Self:
+        return self.output_data_access
+
+    def set_output_data_access(self, da: Self) -> None:
+        self.output_data_access = da
 
     def get_output_folder(self) -> str:
         """
@@ -94,8 +102,8 @@ class DataAccess:
         and the number of operation retries.
         Retries are performed on operation failures and are typically due to the resource overload.
         """
-        if self.get_output_folder() is None:
-            self.logger.warning("Input/Output are not defined, returning empty list")
+        if self.get_input_folder() is None:
+            self.logger.warning("Input folder is not defined, returning empty list")
             return [], {}, 0
         path_list, path_profile, retries = self._get_files_to_process_internal()
         if self.n_samples > 0:
@@ -226,7 +234,11 @@ class DataAccess:
         :param cm_files: max files to get
         :return: tuple of file list, profile and number of retries
         """
-        if not self.checkpoint:
+        checkpoint = self.checkpoint
+        if checkpoint and self.output_data_access.get_output_folder() is None:
+            self.logger.warning("Output folder is not defined, checkpoint will not be used")
+            checkpoint = False
+        if not checkpoint:
             file_sizes, profile, retries = self._get_files_folder(
                 path=input_path,
                 files_to_use=self.files_to_use,
@@ -237,7 +249,7 @@ class DataAccess:
             files = [fs["name"] for fs in file_sizes]
             return files, profile, retries
 
-        pout_list, _, retries1 = self._get_files_folder(
+        pout_list, _, retries1 = self.output_data_access._get_files_folder(
             path=output_path, files_to_use=self.files_to_checkpoint, cm_files=-1
         )
         output_base_names_ext = [file["name"].replace(self.get_output_folder(), self.get_input_folder())
@@ -301,7 +313,7 @@ class DataAccess:
         Get file as a byte array
         :param path: file path
         :return: bytes array of file content and number of operation retries
-                 Retries are performed on operation failures and are typically due to the resource overload.
+                 Here retries are performed on operation failures and are typically due to the resource overload.
 
         """
         raise NotImplementedError("Subclasses should implement this!")
@@ -342,31 +354,31 @@ class DataAccess:
 
     def save_file(self, path: str, data: bytes) -> tuple[dict[str, Any], int]:
         """
-        Save byte array to the file
+        Save byte array
         :param path: file path
         :param data: byte array
         :return: a dictionary as
         defined https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html
         in the case of failure dict is None and number of operation retries
-        Retries are performed on operation failures and are typically due to the resource overload.
+        Here retries are performed on operation failures and are typically due to the resource overload.
         """
         raise NotImplementedError("Subclasses should implement this!")
 
     def get_output_location(self, path: str) -> str:
         """
-        Get output location based on input
+        Get output location
         :param path: input file location
         :return: output file location
         """
-        if self.get_output_folder() is None:
-            self.logger.error("Get out put location. S3 configuration is not provided, returning None")
+        if self.output_data_access.get_output_folder() is None:
+            self.logger.error("Get out put location. output configuration is not provided, returning None")
             return None
-        return path.replace(self.get_input_folder(), self.get_output_folder())
+        return path.replace(self.get_input_folder(), self.output_data_access.get_output_folder())
 
     def save_table(self, path: str, table: pa.Table) -> tuple[int, dict[str, Any], int]:
         """
-        Save table to a given location
-        :param path: location to save table
+        Save table
+        :param path: location to save
         :param table: table
         :return: size of table in memory and a dictionary as
         defined https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html
@@ -388,7 +400,7 @@ class DataAccess:
         two additional elements:
             "source"
             "target"
-        are filled bu implementation
+        are filled by implementation
         :return: a dictionary as
         defined https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html
         in the case of failure dict is None and number of operation retries.
@@ -399,7 +411,7 @@ class DataAccess:
     def sample_input_data(self, n_samples: int = 10) -> tuple[dict[str, Any], int]:
         """
         Sample input data set to get average table size, average doc size, number of docs, etc.
-        Note that here we are not reading all of the input documents, but rather randomly pick
+        Note that here we are not reading all the input documents, but rather randomly pick
         their subset. It gives more precise answer as subset grows, but it takes longer
         :param n_samples: number of samples to use - default 10
         :return: a dictionary of the files profile:
@@ -411,7 +423,7 @@ class DataAccess:
             average doc size KB,
             estimated number of docs
         and number of operation retries
-        Retries are performed on operation failures and are typically due to the resource overload.
+        Here retries are performed on operation failures and are typically due to the resource overload.
         """
         # get files to process
         path_list, path_profile, retries = self._get_files_to_process_internal()

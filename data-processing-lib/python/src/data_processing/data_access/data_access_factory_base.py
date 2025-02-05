@@ -114,18 +114,13 @@ class DataAccessFactoryBase(CLIArgumentProvider):
         :param local_config: dictionary of local config
         :return: True if local config is valid, False otherwise
         """
-        valid_config = True
-        if local_config.get("input_folder", "") == "":
-            valid_config = False
+        if local_config.get("input_folder") is None and local_config.get("output_folder") is None:
             self.logger.error(
-                f"data access factory {self.cli_arg_prefix}: " "Could not find input folder in local config"
+                f"data access factory {self.cli_arg_prefix}: Could not find input and output folder in local config"
             )
-        if local_config.get("output_folder", "") == "":
-            valid_config = False
-            self.logger.error(
-                f"data access factory {self.cli_arg_prefix}: " "Could not find output folder in local config"
-            )
-        return valid_config
+            return False
+
+        return True
 
     def _validate_s3_config(self, s3_config: dict[str, str]) -> bool:
         """
@@ -133,43 +128,36 @@ class DataAccessFactoryBase(CLIArgumentProvider):
         :param s3_config: dictionary of s3 config
         :return: True if s3 config is valid, False otherwise
         """
-        valid_config = True
-        if s3_config.get("input_folder", "") == "":
-            valid_config = False
-            self.logger.error(f"data access factory {self.cli_arg_prefix}: Could not find input folder in s3 config")
-        if s3_config.get("output_folder", "") == "":
-            valid_config = False
-            self.logger.error(f"data access factory {self.cli_arg_prefix}: Could not find output folder in s3 config")
-        return valid_config
+        if s3_config.get("input_folder") is None and s3_config.get("output_folder") is None:
+            self.logger.error(
+                f"data access factory {self.cli_arg_prefix}: Could not find input and output folder in s3 config"
+            )
+            return False
+        return True
 
     def _validate_hf_config(self, hf_config: dict[str, str]) -> bool:
         """
         Validate that
-        :param s3_config: dictionary of hf config
+        :param hf_config: dictionary of hf config
         :return: True if hf config is valid, False otherwise
         """
         valid_config = True
         if hf_config.get("hf_token", "") == "":
             self.logger.warning(f"data access factory {self.cli_arg_prefix}: "
                                 f"HF token is not defined, write operation may fail")
-        input_folder = hf_config.get("input_folder", "")
-        if input_folder == "":
+        input_folder = hf_config.get("input_folder", None)
+        output_folder = hf_config.get("output_folder", None)
+        if input_folder is None and output_folder is None:
             valid_config = False
-            self.logger.error(f"data access factory {self.cli_arg_prefix}: Could not find input folder in HF config")
-        else:
-            if not input_folder.startswith("datasets/"):
-                valid_config = False
-                self.logger.error(f"data access factory {self.cli_arg_prefix}: "
-                                  f"Input folder in HF config has to start from datasets/")
-
-        output_folder = hf_config.get("output_folder", "")
-        if output_folder == "":
+            self.logger.error(
+                f"data access factory {self.cli_arg_prefix}: Could not find input and output folder in HF config"
+            )
+        if input_folder is not None and not input_folder.startswith("datasets/"):
             valid_config = False
-            self.logger.error(f"data access factory {self.cli_arg_prefix}: Could not find output folder in HF config")
-        else:
-            if not output_folder.startswith("datasets/"):
-                valid_config = False
-                self.logger.error(f"data access factory {self.cli_arg_prefix}: "
-                                  f"Output folder in HF config has to start from datasets/")
-
+            self.logger.error(f"data access factory {self.cli_arg_prefix}: "
+                              f"Input folder in HF config has to start from datasets/")
+        if output_folder is not None and not output_folder.startswith("datasets/"):
+            valid_config = False
+            self.logger.error(f"data access factory {self.cli_arg_prefix}: "
+                              f"Output folder in HF config has to start from datasets/")
         return valid_config

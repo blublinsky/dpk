@@ -59,8 +59,14 @@ class DataAccessS3(DataAccess):
             self.input_folder = None
             self.output_folder = None
         else:
-            self.input_folder = TransformUtils.clean_path(s3_config["input_folder"])
-            self.output_folder = TransformUtils.clean_path(s3_config["output_folder"])
+            if s3_config["input_folder"] is None:
+                self.input_folder = None
+            else:
+                self.input_folder = TransformUtils.clean_path(s3_config["input_folder"])
+            if s3_config["output_folder"] is None:
+                self.output_folder = None
+            else:
+                self.output_folder = TransformUtils.clean_path(s3_config["output_folder"])
         self.arrS3 = ArrowS3(
             access_key=s3_credentials.get("access_key"),
             secret_key=s3_credentials.get("secret_key"),

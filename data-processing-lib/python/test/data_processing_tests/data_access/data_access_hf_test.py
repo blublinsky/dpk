@@ -27,6 +27,7 @@ def test_hf_data_access():
     :return: None
     """
     data_access = DataAccessHF(hf_config=hf_conf)
+    data_access.set_output_data_access(data_access)
     # get files to process
     files, profile, retries = data_access.get_files_to_process()
     assert len(files) == 50
@@ -64,6 +65,7 @@ def test_hf_data_access_sets():
     :return: None
     """
     data_access = DataAccessHF(hf_config=hf_conf, d_sets=["aai_Latn", "aba_Latn"])
+    data_access.set_output_data_access(data_access)
     # get files to process
     files, profile, retries = data_access.get_files_to_process()
     assert len(files) == 4
@@ -79,6 +81,7 @@ def test_data_set_card():
     """
     # read the card
     data_access = DataAccessHF(hf_config=hf_conf)
+    data_access.set_output_data_access(data_access)
     card = data_access.get_dataset_card(ds_name="blublinsky/test")
     assert card.data.license == 'apache-2.0'
     # update it
