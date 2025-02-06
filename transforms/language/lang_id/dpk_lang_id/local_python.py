@@ -21,13 +21,14 @@ from dpk_lang_id.transform import (
     model_credential_cli_param,
     model_kind_cli_param,
     model_url_cli_param,
+    default_model_credential_key,
 )
 from dpk_lang_id.transform_python import LangIdentificationPythonTransformConfiguration
 
 
 # create parameters
-input_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "test-data", "input"))
-output_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "output"))
+input_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "test-data", "input"))
+output_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "output"))
 local_conf = {
     "input_folder": input_folder,
     "output_folder": output_folder,
@@ -41,7 +42,7 @@ params = {
     "runtime_job_id": "job_id",
     "runtime_code_location": ParamsUtils.convert_to_ast(code_location),
     # lang_id params
-    model_credential_cli_param: "PUT YOUR OWN HUGGINGFACE CREDENTIAL",
+    model_credential_cli_param: default_model_credential_key,
     model_kind_cli_param: KIND_FASTTEXT,
     model_url_cli_param: "facebook/fasttext-language-identification",
     content_column_name_cli_param: "text",

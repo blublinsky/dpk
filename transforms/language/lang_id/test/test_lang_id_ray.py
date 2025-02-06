@@ -24,6 +24,7 @@ from dpk_lang_id.transform import (
     model_url_cli_param,
     output_lang_column_name_cli_param,
     output_score_column_name_cli_param,
+    default_model_credential_key
 )
 
 
@@ -37,7 +38,7 @@ class TestRayLangIdentificationTransform(AbstractTransformLauncherTest):
         basedir = "../test-data"
         basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), basedir))
         config = {
-            model_credential_cli_param: "PUT YOUR OWN HUGGINGFACE CREDENTIAL",
+            model_credential_cli_param: default_model_credential_key,
             model_kind_cli_param: KIND_FASTTEXT,
             model_url_cli_param: "facebook/fasttext-language-identification",
             content_column_name_cli_param: "text",
@@ -45,6 +46,10 @@ class TestRayLangIdentificationTransform(AbstractTransformLauncherTest):
             output_score_column_name_cli_param: "ft_score",
             "run_locally": True,
         }
+        hf_credential = config.get(model_credential_cli_param, default_model_credential_key)
+        if hf_credential == default_model_credential_key:
+            # skip it if HF key is not defined
+            return []
         return [
             (
                 RayTransformLauncher(LangIdentificationRayTransformConfiguration()),

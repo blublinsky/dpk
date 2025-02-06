@@ -19,31 +19,34 @@ from dpk_lang_id.transform import (
     model_credential_key,
     model_kind_key,
     model_url_key,
+    default_model_credential_key,
 )
 from lang_models import KIND_FASTTEXT
-
 
 # create parameters
 input_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "test-data", "input"))
 
 lang_id_params = {
-    model_credential_key: "PUT YOUR OWN HUGGINGFACE CREDENTIAL",
+    model_credential_key: default_model_credential_key,
     model_kind_key: KIND_FASTTEXT,
     model_url_key: "facebook/fasttext-language-identification",
     content_column_name_key: "text",
 }
 if __name__ == "__main__":
     # Here we show how to run outside of the runtime
-    # Create and configure the transform.
-    transform = LangIdentificationTransform(lang_id_params)
-    # Use the local data access to read a parquet table.
-    data_access = DataAccessLocal()
-    table, _ = data_access.get_table(os.path.join(input_folder, "test_01.parquet"))
-    print(f"input table: {table}")
-    # Transform the table
-    try:
-        table_list, metadata = transform.transform(table)
-        print(f"\noutput table: {table_list}")
-        print(f"output metadata : {metadata}")
-    except Exception as e:
-        print(f"Exception executing transofm {e}")
+    hf_credential = lang_id_params.get(model_credential_key, None)
+    if hf_credential is not None and hf_credential != default_model_credential_key:
+        # skip it if HF key is not defined
+        # Create and configure the transform.
+        transform = LangIdentificationTransform(lang_id_params)
+        # Use the local data access to read a parquet table.
+        data_access = DataAccessLocal()
+        table, _ = data_access.get_table(os.path.join(input_folder, "test_01.parquet"))
+        print(f"input table: {table}")
+        # Transform the table
+        try:
+            table_list, metadata = transform.transform(table)
+            print(f"\noutput table: {table_list}")
+            print(f"output metadata : {metadata}")
+        except Exception as e:
+            print(f"Exception executing transofm {e}")

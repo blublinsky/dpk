@@ -38,6 +38,7 @@ output_score_column_name_cli_param = f"{cli_prefix}{output_score_column_name_key
 default_content_column_name = "contents"
 default_output_lang_column_name = "lang"
 default_output_score_column_name = "score"
+default_model_credential_key = "PUT YOUR OWN HUGGINGFACE CREDENTIAL"
 
 
 class LangIdentificationTransform(AbstractTableTransform):
@@ -55,8 +56,11 @@ class LangIdentificationTransform(AbstractTableTransform):
         # Make sure that the param name corresponds to the name used in apply_input_params method
         # of LangIdentificationTransformConfiguration class
         super().__init__(config)
+        hf_cred = config.get(model_credential_key, default_model_credential_key)
+        if hf_cred == default_model_credential_key:
+            hf_cred = None
         self.nlp_langid = LangModelFactory.create_model(
-            config.get(model_kind_key), config.get(model_url_key), config.get(model_credential_key)
+            config.get(model_kind_key), config.get(model_url_key), hf_cred
         )
         self.content_column_name = config.get(content_column_name_key, default_content_column_name)
         self.output_lang_column_name = config.get(output_lang_column_name_key, default_output_lang_column_name)

@@ -18,6 +18,7 @@ from data_processing.test_support.launch.transform_test import (
 )
 from dpk_lang_id.lang_models import KIND_FASTTEXT
 from dpk_lang_id.transform_python import LangIdentificationPythonTransformConfiguration
+from dpk_lang_id.transform import default_model_credential_key
 
 
 class TestPythonLangIdentificationTransform(AbstractTransformLauncherTest):
@@ -28,7 +29,7 @@ class TestPythonLangIdentificationTransform(AbstractTransformLauncherTest):
 
     def get_test_transform_fixtures(self) -> list[tuple]:
         cli_params = {
-            "lang_id_model_credential": "PUT YOUR OWN HUGGINGFACE CREDENTIAL",
+            "lang_id_model_credential": default_model_credential_key,
             "lang_id_model_kind": KIND_FASTTEXT,
             "lang_id_model_url": "facebook/fasttext-language-identification",
             "lang_id_content_column_name": "text",
@@ -37,6 +38,8 @@ class TestPythonLangIdentificationTransform(AbstractTransformLauncherTest):
         }
         basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../test-data"))
         fixtures = []
-        launcher = PythonTransformLauncher(LangIdentificationPythonTransformConfiguration())
-        fixtures.append((launcher, cli_params, basedir + "/input", basedir + "/expected"))
+        hf_credential = cli_params.get("lang_id_model_credential", default_model_credential_key)
+        if hf_credential != default_model_credential_key:
+            launcher = PythonTransformLauncher(LangIdentificationPythonTransformConfiguration())
+            fixtures.append((launcher, cli_params, basedir + "/input", basedir + "/expected"))
         return fixtures

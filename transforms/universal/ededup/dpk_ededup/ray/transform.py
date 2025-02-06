@@ -142,8 +142,8 @@ class EdedupRayRuntime(DefaultRayTransformRuntime):
         # from the current amount of hashes
         snapshot_path = self.params.get("snapshot_directory", None)
         if snapshot_path is None or len(snapshot_path) == 0:
-            snapshot_path = f"{SnapshotUtils.get_snapshot_folder(data_access_factory.create_data_access())}"
-        data_access = data_access_factory.create_data_access()
+            snapshot_path = f"{SnapshotUtils.get_snapshot_folder(data_access_factory[1].create_data_access())}"
+        data_access = data_access_factory[0].create_data_access()
         # get snapshot files
         files, retries = data_access.get_folder_files(path=snapshot_path)
         if retries > 0:

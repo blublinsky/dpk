@@ -24,6 +24,7 @@ from dpk_lang_id.transform import (
     model_url_cli_param,
     output_lang_column_name_cli_param,
     output_score_column_name_cli_param,
+    default_model_credential_key,
 )
 
 
@@ -56,7 +57,7 @@ params = {
     "runtime_creation_delay": 0,
     "runtime_code_location": ParamsUtils.convert_to_ast(code_location),
     # lang_id params
-    model_credential_cli_param: "PUT YOUR OWN HUGGINGFACE CREDENTIAL",
+    model_credential_cli_param: default_model_credential_key,
     model_kind_cli_param: KIND_FASTTEXT,
     model_url_cli_param: "facebook/fasttext-language-identification",
     content_column_name_cli_param: "text",
