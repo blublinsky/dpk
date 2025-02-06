@@ -130,7 +130,8 @@ def orchestrate(
         # Compute execution statistics
         logger.debug("Computing execution stats")
         stats = statistics.get_execution_stats()
-        stats["processing_time"] = round(stats["processing_time"], 3)
+        if "processing_time" in stats:
+            stats["processing_time"] = round(stats["processing_time"], 3)
         # build and save metadata
         logger.debug("Building job metadata")
         input_params = runtime_config.get_transform_metadata()

@@ -151,6 +151,9 @@ def remove_copyright(id_code: tuple[Any, str], tmp_dir=None, timeout=-1, skip_ti
             copyright_dict = {}
         else:
             raise Exception(f"Timeout during copyright scan: {doc_id}")
+    except Exception as e:
+        logger.warning(f"Skipping removing copyrights due to exception {e}: {doc_id}")
+        copyright_dict = {}
     os.remove(file_path)
     ignore_lines = fetch_index(copyright_dict)
     if len(ignore_lines) > 0:

@@ -192,6 +192,8 @@ def orchestrate(
             memory += executors.toList().apply(i)._2()._1()
         resources = {"cpus": cpus, "gpus": 0, "memory": round(memory / GB, 2), "object_store": 0}
         input_params = runtime_config.get_transform_metadata() | execution_configuration.get_input_params()
+        if "processing_time" in stats:
+            stats["processing_time"] = round(stats["processing_time"], 3)
         metadata = {
             "pipeline": execution_configuration.pipeline_id,
             "job details": execution_configuration.job_details
