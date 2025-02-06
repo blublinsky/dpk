@@ -1,4 +1,4 @@
 data-prep-toolkit>=0.2.3
-scancode-toolkit==32.0.2 ; platform_system != 'Darwin'
+scancode-toolkit==32.0.2
 timeout-timer==0.2.0
 
