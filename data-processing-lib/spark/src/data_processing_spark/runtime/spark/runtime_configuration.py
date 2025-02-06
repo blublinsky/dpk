@@ -32,7 +32,7 @@ class SparkTransformRuntimeConfiguration(TransformRuntimeConfiguration):
         super().__init__(transform_config=transform_config)
         self.runtime_class = runtime_class
 
-    def get_bcast_params(self, data_access_factory: DataAccessFactoryBase) -> dict[str, Any]:
+    def get_bcast_params(self, data_access_factory: list[DataAccessFactoryBase]) -> dict[str, Any]:
         """Allows retrieving and broadcasting to all the workers very large
         configuration parameters, like the list of document IDs to remove for
         fuzzy dedup, or the list of blocked web domains for block listing.  This

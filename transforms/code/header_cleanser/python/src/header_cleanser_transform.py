@@ -51,7 +51,6 @@ warnings.simplefilter('ignore', DeprecationWarning)
 short_name = "header_cleanser"
 cli_prefix = short_name + "_"
 COLUMN_KEY = "contents_column_name"
-DEFAULT_DOCUMENT_ID_COLUMN = "doc_id_column_name"
 DOCUMENT_ID_COLUMN_KEY = "document_id_column_name"
 LICENSE_KEY = "license"
 COPYRIGHT_KEY = "copyright"
@@ -97,14 +96,14 @@ def fetch_index(dict_data):
     Extract License and copyright start and endline from dictonary
     """
     ignore_lines = []
-    if dict_data.get("license_detections", None) != None:
+    if dict_data.get("license_detections", None) is not None:
         for licenses in dict_data.get("license_detections"):
             for match in licenses.get("matches"):
                 start_line = match["start_line"] - 1
                 end_line = match["end_line"] - 1
                 ignore_lines.extend([i for i in range(start_line, end_line + 1)])
 
-    if dict_data.get("copyrights", None) != None:
+    if dict_data.get("copyrights", None) is not None:
         for copyrights in dict_data.get("copyrights"):
             start_line = copyrights.get("start_line") - 1
             end_line = copyrights.get("end_line") - 1
@@ -152,9 +151,12 @@ def remove_copyright(id_code: tuple[Any, str], tmp_dir=None, timeout=-1, skip_ti
             copyright_dict = {}
         else:
             raise Exception(f"Timeout during copyright scan: {doc_id}")
+    except Exception as e:
+        logger.warning(f"Skipping removing copyrights due to exception {e}: {doc_id}")
+        copyright_dict = {}
     os.remove(file_path)
     ignore_lines = fetch_index(copyright_dict)
-    if ignore_lines != []:
+    if len(ignore_lines) > 0:
         modified_code = "\n".join([line for i, line in enumerate(code.split("\n"), 0) if i not in ignore_lines])
         return modified_code, ignore_lines != []
     else:
@@ -178,7 +180,7 @@ def remove_license(id_code: tuple[Any, str], tmp_dir=None, timeout=-1, skip_time
             raise Exception(f"Timeout during license scan: {doc_id}")
     os.remove(file_path)
     ignore_lines = fetch_index(license_dict)
-    if ignore_lines != []:
+    if len(ignore_lines) > 0:
         modified_code = "\n".join([line for i, line in enumerate(code.split("\n"), 0) if i not in ignore_lines])
         return modified_code, ignore_lines != []
     else:
@@ -197,6 +199,9 @@ def remove_license_copyright(id_code: tuple[Any, str], tmp_dir=None, timeout=-1,
             copyright_dict = {}
         else:
             raise Exception(f"Timeout during copyright scan: {doc_id}")
+    except Exception as e:
+        logger.warning(f"Skipping removing copyrights due to exception {e}: {doc_id}")
+        copyright_dict = {}
     try:
         with timeout_timer.timeout(timeout, timer="signal"):
             license_dict = api.get_licenses(file_path)
@@ -210,7 +215,7 @@ def remove_license_copyright(id_code: tuple[Any, str], tmp_dir=None, timeout=-1,
     ignore_lines_license = fetch_index(license_dict)
     ignore_lines_copyright = fetch_index(copyright_dict)
     ignore_lines = ignore_lines_license + ignore_lines_copyright
-    if ignore_lines != []:
+    if len(ignore_lines) > 0:
         ignore_lines = check_empty_comment(code, ignore_lines)
         modified_code = "\n".join([line for i, line in enumerate(code.split("\n"), 0) if i not in ignore_lines])
         return modified_code, True
@@ -276,7 +281,8 @@ class HeaderCleanserTransform(AbstractTableTransform):
                 chunksize = DEFAULT_CHUNK_SIZE
             elif len(contents) > self.n_processes * 2:
                 chunksize = len(contents) // self.n_processes
-            logger.debug(f"Breaking {len(contents)} contents into {math.ceil(len(contents) / chunksize)} chunks (size: {chunksize})")
+            logger.debug(f"Breaking {len(contents)} contents into {math.ceil(len(contents) / chunksize)} "
+                         f"chunks (size: {chunksize})")
             results = executor.map(func, ids_contents, chunksize=chunksize)
             for c, d in results:
                 updated_content.append(c)

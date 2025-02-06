@@ -17,13 +17,14 @@ from data_processing.utils import ParamsUtils
 from data_processing_ray.runtime.ray import RayTransformLauncher
 from dpk_lang_id.lang_models import KIND_FASTTEXT
 from dpk_lang_id.ray.transform import LangIdentificationRayTransformConfiguration
-from lang_id_transform import (
+from dpk_lang_id.transform import (
     content_column_name_cli_param,
     model_credential_cli_param,
     model_kind_cli_param,
     model_url_cli_param,
     output_lang_column_name_cli_param,
     output_score_column_name_cli_param,
+    default_model_credential_key,
 )
 
 
@@ -49,7 +50,7 @@ params = {
     "runtime_creation_delay": 0,
     "runtime_code_location": ParamsUtils.convert_to_ast(code_location),
     # lang_id params
-    model_credential_cli_param: "PUT YOUR OWN HUGGINGFACE CREDENTIAL",
+    model_credential_cli_param: default_model_credential_key,
     model_kind_cli_param: KIND_FASTTEXT,
     model_url_cli_param: "facebook/fasttext-language-identification",
     content_column_name_cli_param: "text",

@@ -12,10 +12,23 @@
 
 import pyarrow as pa
 from data_processing.test_support.transform.table_transform_test import (
-    AbstractTableTransformTest,
+    AbstractTableTransformTest, AbstractTableTransform
 )
 from dpk_lang_id.lang_models import KIND_FASTTEXT
-from dpk_lang_id.transform import LangIdentificationTransform
+from dpk_lang_id.transform import (
+    LangIdentificationTransform,
+    default_model_credential_key,
+)
+
+
+config = {
+    "model_credential": default_model_credential_key,
+    "model_kind": KIND_FASTTEXT,
+    "model_url": "facebook/fasttext-language-identification",
+    "content_column_name": "contents",
+    "output_lang_column_name": "l",
+    "output_score_column_name": "s",
+}
 
 
 class TestLangIdentificationTransform(AbstractTableTransformTest):
@@ -24,15 +37,27 @@ class TestLangIdentificationTransform(AbstractTableTransformTest):
     The name of this class MUST begin with the word Test so that pytest recognizes it as a test class.
     """
 
+    def test_transform(
+            self,
+            transform: AbstractTableTransform,
+            in_table_list: list[pa.Table],
+            expected_table_list: list[pa.Table],
+            expected_metadata_list: list[dict[str, float]],
+    ):
+        hf_credential = config.get("model_credential", default_model_credential_key)
+        if hf_credential == default_model_credential_key:
+            # skip it if HF key is not defined
+            return
+
+        super().test_transform(
+            transform=transform,
+            in_table_list=in_table_list,
+            expected_table_list=expected_table_list,
+            expected_metadata_list=expected_metadata_list,
+        )
+
+
     def get_test_transform_fixtures(self) -> list[tuple]:
-        config = {
-            "model_credential": "PUT YOUR OWN HUGGINGFACE CREDENTIAL",
-            "model_kind": KIND_FASTTEXT,
-            "model_url": "facebook/fasttext-language-identification",
-            "content_column_name": "contents",
-            "output_lang_column_name": "l",
-            "output_score_column_name": "s",
-        }
         table = pa.Table.from_arrays(
             [
                 pa.array(
@@ -136,3 +161,4 @@ class TestLangIdentificationTransform(AbstractTableTransformTest):
                 [{"de": 1, "es": 1, "fr": 1, "ja": 1, "pt": 1}, {}],
             )
         ]
+

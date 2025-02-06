@@ -16,7 +16,7 @@ import sys
 from data_processing.runtime.pure_python import PythonTransformLauncher
 from data_processing.utils import ParamsUtils
 from header_cleanser_transform import (
-    HeaderCleanserTransformConfiguration,
+    HeaderCleanserPythonTransformConfiguration,
     column_cli_params,
     copyright_cli_params,
     license_cli_params,
@@ -48,6 +48,6 @@ if __name__ == "__main__":
     # Set the simulated command line args
     sys.argv = ParamsUtils.dict_to_req(d=params | header_cleanser_params)
     # create launcher
-    launcher = PythonTransformLauncher(HeaderCleanserTransformConfiguration())
+    launcher = PythonTransformLauncher(runtime_config=HeaderCleanserPythonTransformConfiguration())
     # Launch the ray actor(s) to process the input
     launcher.launch()

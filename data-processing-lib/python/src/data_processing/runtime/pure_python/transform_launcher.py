@@ -12,6 +12,7 @@
 
 import time
 
+from typing import Union
 from data_processing.data_access import DataAccessFactory, DataAccessFactoryBase
 from data_processing.runtime.pure_python import (
     PythonTransformExecutionConfiguration,
@@ -33,7 +34,7 @@ class PythonTransformLauncher(AbstractTransformLauncher):
     def __init__(
         self,
         runtime_config: PythonTransformRuntimeConfiguration,
-        data_access_factory: DataAccessFactoryBase = DataAccessFactory(),
+        data_access_factory: Union[DataAccessFactoryBase, list[DataAccessFactoryBase]] = DataAccessFactory(),
     ):
         """
         Creates driver

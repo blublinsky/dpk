@@ -25,7 +25,6 @@ from data_processing_spark.runtime.spark import (
     SparkTransformFileProcessor,
     SparkTransformRuntimeConfiguration,
 )
-from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 
 
@@ -76,7 +75,7 @@ def _init_spark(runtime_config: SparkTransformRuntimeConfiguration) -> SparkSess
 def orchestrate(
     runtime_config: SparkTransformRuntimeConfiguration,
     execution_configuration: SparkTransformExecutionConfiguration,
-    data_access_factory: DataAccessFactoryBase,
+    data_access_factory: list[DataAccessFactoryBase],
 ) -> int:
     """
     orchestrator for transformer execution
@@ -89,8 +88,12 @@ def orchestrate(
     start_ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logger.info(f"orchestrator started at {start_ts}")
     # create data access
-    data_access = data_access_factory.create_data_access()
-    bcast_params = runtime_config.get_bcast_params(data_access_factory)
+    data_access = data_access_factory[0].create_data_access()
+    data_access_out = data_access_factory[1].create_data_access()
+    if data_access is None or data_access_out is None:
+        logger.error("No DataAccess instance provided - exiting")
+        return 1
+    data_access.set_output_data_access(data_access_out)
     if data_access is None:
         logger.error("No DataAccess instance provided - exiting")
         return 1
@@ -100,7 +103,6 @@ def orchestrate(
     # broadcast
     spark_runtime_config = sc.broadcast(runtime_config)
     daf = sc.broadcast(data_access_factory)
-    spark_bcast_params = sc.broadcast(bcast_params)
 
     def process_partition(iterator):
         """
@@ -111,7 +113,6 @@ def orchestrate(
         # local statistics dictionary
         statistics = TransformStatistics()
         # create transformer runtime
-        bcast_params = spark_bcast_params.value
         d_access_factory = daf.value
         runtime_conf = spark_runtime_config.value
         runtime = runtime_conf.create_transform_runtime()
@@ -132,7 +133,6 @@ def orchestrate(
                     runtime.get_transform_config(
                         partition=int(f[1]), data_access_factory=d_access_factory, statistics=statistics
                     )
-                    | bcast_params
                 )
                 # create transform with partition number
                 file_processor.create_transform(transform_params)
@@ -192,6 +192,8 @@ def orchestrate(
             memory += executors.toList().apply(i)._2()._1()
         resources = {"cpus": cpus, "gpus": 0, "memory": round(memory / GB, 2), "object_store": 0}
         input_params = runtime_config.get_transform_metadata() | execution_configuration.get_input_params()
+        if "processing_time" in stats:
+            stats["processing_time"] = round(stats["processing_time"], 3)
         metadata = {
             "pipeline": execution_configuration.pipeline_id,
             "job details": execution_configuration.job_details
@@ -201,7 +203,7 @@ def orchestrate(
                 "status": status,
             },
             "code": execution_configuration.code_location,
-            "job_input_params": input_params | data_access_factory.get_input_params(),
+            "job_input_params": input_params | data_access_factory[0].get_input_params(),
             "execution_stats": {
                 "num partitions": num_partitions,
                 "execution time, min": round((time.time() - start_time) / 60, 3),
@@ -210,7 +212,7 @@ def orchestrate(
             "job_output_stats": stats,
         }
         logger.debug(f"Saving job metadata: {metadata}.")
-        data_access.save_job_metadata(metadata)
+        data_access_out.save_job_metadata(metadata)
         logger.debug("Saved job metadata.")
         return return_code
     except Exception as e:

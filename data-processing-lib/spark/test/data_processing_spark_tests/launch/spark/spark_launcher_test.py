@@ -127,11 +127,11 @@ def test_local_config_validate():
     params["data_local_config"] = ParamsUtils.convert_to_ast(local_conf_no_input)
     sys.argv = ParamsUtils.dict_to_req(d=params)
     res = TestLauncherSpark().launch()
-    assert 1 == res
+    assert 0 == res
     params["data_local_config"] = ParamsUtils.convert_to_ast(local_conf_no_output)
     sys.argv = ParamsUtils.dict_to_req(d=params)
     res = TestLauncherSpark().launch()
-    assert 1 == res
+    assert 0 == res
     params["data_local_config"] = ParamsUtils.convert_to_ast(local_conf)
     sys.argv = ParamsUtils.dict_to_req(d=params)
     res = TestLauncherSpark().launch()
@@ -160,11 +160,11 @@ def test_s3_config_validate():
     params["data_s3_config"] = ParamsUtils.convert_to_ast(s3_conf_no_input)
     sys.argv = ParamsUtils.dict_to_req(d=params)
     res = TestLauncherSpark().launch()
-    assert 1 == res
+    assert 0 == res
     params["data_s3_config"] = ParamsUtils.convert_to_ast(s3_conf_no_output)
     sys.argv = ParamsUtils.dict_to_req(d=params)
     res = TestLauncherSpark().launch()
-    assert 1 == res
+    assert 0 == res
     params["data_s3_config"] = ParamsUtils.convert_to_ast(s3_conf)
     sys.argv = ParamsUtils.dict_to_req(d=params)
     res = TestLauncherSpark().launch()

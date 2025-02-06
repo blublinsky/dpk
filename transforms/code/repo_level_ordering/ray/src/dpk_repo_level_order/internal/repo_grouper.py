@@ -32,13 +32,14 @@ class GroupByRepo:
         repo_column_name,
         output_dir,
         logger,
-        data_access,
+        data_access_factory,
         table_mapper=None,
     ):
         self.repo_column_name = repo_column_name
         self.output_dir = output_dir
         self.logger = get_logger(__name__)
-        self.data_access = data_access
+        self.data_access = data_access_factory[0].create_data_access()
+        self.data_access_out = data_access_factory[1].create_data_access()
         self.enable_superrows = True
         self.table_mapper = table_mapper
         if self.table_mapper is None:
@@ -76,7 +77,7 @@ class GroupByRepo:
         # since we already know the repo
         # self.output_path should have the basepath where to write
         parquet_path = os.path.join(self.output_dir, f"{repo_name}.parquet")
-        self.data_access.save_table(os.path.normpath(parquet_path), table)
+        self.data_access_out.save_table(os.path.normpath(parquet_path), table)
 
     def _read_table_for_group(self, grouping_column, group, files):
         """This function reads the files and filters the tables based on grouping_column value"""
@@ -132,6 +133,6 @@ class GroupByRepoActor(GroupByRepo):
             params["repo_column_name"],
             params["output_dir"],
             None,
-            params["data_access_factory"].create_data_access(),
+            params["data_access_factory"],
             params["mapper"],
         )

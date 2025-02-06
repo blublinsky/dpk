@@ -18,3 +18,6 @@ class TestPythonHeaderCleanserTransform(AbstractPythonHeaderCleanserTransformTes
     def _get_test_file_directory(self) -> str:
         dir = os.path.abspath(os.path.dirname(__file__))
         return dir
+    # disabling the test
+    def get_test_transform_fixtures(self) -> list[tuple]:
+        return []

@@ -25,7 +25,7 @@ class PythonTransformFileProcessor(AbstractTransformFileProcessor):
 
     def __init__(
         self,
-        data_access_factory: DataAccessFactoryBase,
+        data_access_factory: list[DataAccessFactoryBase],
         statistics: TransformStatistics,
         transform_params: dict[str, Any],
         transform_class: type[AbstractTransform],
@@ -66,7 +66,7 @@ class PythonPoolTransformFileProcessor(AbstractTransformFileProcessor):
 
     def __init__(
         self,
-        data_access_factory: DataAccessFactoryBase,
+        data_access_factory: list[DataAccessFactoryBase],
         transform_params: dict[str, Any],
         transform_class: type[AbstractTransform],
         is_folder: bool

@@ -196,22 +196,44 @@ class DataAccessFactory(DataAccessFactoryBase):
 
         # further validate the specified configuration (S3, hf or Local)
         if s3_config_specified == 1:
-            if not self._validate_s3_config(s3_config=s3_config):
+            # S3 config requires S3 credentials
+            if not self._validate_s3_cred(s3_credentials=s3_cred):
                 return False
             self.s3_cred = s3_cred
-            # S3 config requires S3 credentials
-            if not self._validate_s3_cred(s3_credentials=self.s3_cred):
+            config = {"input_folder": None, "output_folder": None}
+            input_folder = s3_config.get("input_folder", None)
+            if input_folder == "":
+                input_folder = None
+            if input_folder is not None:
+                config["input_folder"] = input_folder
+            output_folder = s3_config.get("output_folder", None)
+            if output_folder == "":
+                output_folder = None
+            if output_folder is not None:
+                config["output_folder"] = s3_config.get("output_folder")
+            if not self._validate_s3_config(s3_config=config):
                 return False
-            self.s3_config = s3_config
+            self.s3_config = config
             self.logger.info(
                 f"data factory {self.cli_arg_prefix} is using S3 data access: "
                 f'input path - {self.s3_config["input_folder"]}, '
                 f'output path - {self.s3_config["output_folder"]}'
             )
         elif hf_config_specified == 1:
-            if not self._validate_hf_config(hf_config=hf_config):
+            config = {"input_folder": None, "output_folder": None, "hf_token": hf_config.get("hf_token", "")}
+            input_folder = hf_config.get("input_folder", None)
+            if input_folder == "":
+                input_folder = None
+            if input_folder is not None:
+                config["input_folder"] = input_folder
+            output_folder = hf_config.get("output_folder", None)
+            if output_folder == "":
+                output_folder = None
+            if output_folder is not None:
+                config["output_folder"] = output_folder
+            if not self._validate_hf_config(hf_config=config):
                 return False
-            self.hf_config = hf_config
+            self.hf_config = config
             self.logger.info(
                 f"data factory {self.cli_arg_prefix} is using HF data access: "               
                 f"input_folder - {self.hf_config['input_folder']} "
@@ -223,9 +245,20 @@ class DataAccessFactory(DataAccessFactoryBase):
             self.s3_cred = s3_cred
             self.logger.info(f"data factory {self.cli_arg_prefix} is using s3 configuration without input/output path")
         elif local_config_specified == 1:
-            if not self._validate_local_config(local_config=local_config):
+            config = {"input_folder": None, "output_folder": None}
+            input_folder = local_config.get("input_folder", None)
+            if input_folder == "":
+                input_folder = None
+            if input_folder is not None:
+                config["input_folder"] = input_folder
+            output_folder = local_config.get("output_folder", None)
+            if output_folder == "":
+                output_folder = None
+            if output_folder is not None:
+                config["output_folder"] = output_folder
+            if not self._validate_local_config(local_config=config):
                 return False
-            self.local_config = local_config
+            self.local_config = config
             self.logger.info(
                 f"data factory {self.cli_arg_prefix} is using local data access: "
                 f"input_folder - {self.local_config['input_folder']} "

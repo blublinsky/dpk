@@ -27,6 +27,7 @@ def test_table_sampling_data():
     output_folder = "/tmp"
     print(input_folder)
     data_access = DataAccessLocal({"input_folder": input_folder, "output_folder": output_folder})
+    data_access.set_output_data_access(data_access)
     profile, _ = data_access.sample_input_data()
     print(f"\nprofiled directory {input_folder}")
     print(f"profile {profile}")

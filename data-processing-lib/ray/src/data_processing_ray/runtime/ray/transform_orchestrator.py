@@ -30,7 +30,7 @@ from ray.util import ActorPool
 @ray.remote(num_cpus=1, scheduling_strategy="SPREAD")
 def orchestrate(
     preprocessing_params: RayTransformExecutionConfiguration,
-    data_access_factory: DataAccessFactoryBase,
+    data_access_factory: list[DataAccessFactoryBase],
     runtime_config: RayTransformRuntimeConfiguration,
 ) -> int:
     """
@@ -49,12 +49,14 @@ def orchestrate(
     start_time = time.time()
     logger.info(f"orchestrator started at {start_ts}")
     # create data access
-    data_access = data_access_factory.create_data_access()
-    if data_access is None:
+    data_access = data_access_factory[0].create_data_access()
+    data_access_out = data_access_factory[1].create_data_access()
+    if data_access is None or data_access_out is None:
         logger.error("No DataAccess instance provided - exiting")
         return 1
-    statistics = TransformStatisticsRay.remote({})
+    data_access.set_output_data_access(data_access_out)
     # create transformer runtime
+    statistics = TransformStatisticsRay.remote({})
     runtime = runtime_config.create_transform_runtime()
     resources = RayUtils.get_cluster_resources()
     is_folder = issubclass(runtime_config.get_transform_class(), AbstractFolderTransform)
@@ -153,13 +155,13 @@ def orchestrate(
             | {"start_time": start_ts, "end_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "status": status},
             "code": preprocessing_params.code_location,
             "job_input_params": runtime_config.get_transform_metadata()
-            | data_access_factory.get_input_params()
+            | data_access_factory[0].get_input_params()
             | preprocessing_params.get_input_params(),
             "execution_stats": resources | {"execution time, min": round((time.time() - start_time) / 60.0, 3)},
             "job_output_stats": stats,
         }
         logger.debug(f"Saving job metadata: {metadata}.")
-        data_access.save_job_metadata(metadata)
+        data_access_out.save_job_metadata(metadata)
         logger.debug("Saved job metadata.")
         return return_code
     except Exception as e:

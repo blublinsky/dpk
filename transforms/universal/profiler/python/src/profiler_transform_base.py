@@ -43,7 +43,7 @@ class DataAggregator:
         data_access_factory = params.get("data_access_factory", None)
         if data_access_factory is None:
             raise UnrecoverableException("Data access factory is not defined for the data aggregator")
-        self.data_access = data_access_factory.create_data_access()
+        self.data_access = data_access_factory[1].create_data_access()
 
     def add_words(self, words: dict[str, int]) -> None:
         """

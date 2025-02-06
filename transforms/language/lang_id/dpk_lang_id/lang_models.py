@@ -45,8 +45,9 @@ class FastTextModel(LangModel):
 
 
 class LangModelFactory:
+    @staticmethod
     def create_model(kind: str, url: str, credential: str) -> LangModel:
-        if kind == KIND_FASTTEXT:
+        if kind == KIND_FASTTEXT and credential is not None:
             return FastTextModel(url, credential)
         else:
             return NoopModel()

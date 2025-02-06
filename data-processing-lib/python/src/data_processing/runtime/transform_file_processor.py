@@ -24,7 +24,7 @@ class AbstractTransformFileProcessor:
 
     def __init__(
         self,
-        data_access_factory: DataAccessFactoryBase,
+        data_access_factory: list[DataAccessFactoryBase],
         transform_parameters: dict[str, Any],
         is_folder: bool = False,
     ):
@@ -36,7 +36,7 @@ class AbstractTransformFileProcessor:
         """
         self.logger = get_logger(__name__)
         # validate parameters
-        if data_access_factory is None:
+        if data_access_factory[0] is None or data_access_factory[1] is None:
             self.logger.error("Transform file processor: data access factory is not specified")
             raise UnrecoverableException("data access factory is None")
         self.transform = None
@@ -44,7 +44,9 @@ class AbstractTransformFileProcessor:
         self.last_file_name = None
         self.last_extension = None
         self.last_file_name_next_index = None
-        self.data_access = data_access_factory.create_data_access()
+        self.data_access_output = data_access_factory[1].create_data_access()
+        self.data_access = data_access_factory[0].create_data_access()
+        self.data_access.set_output_data_access(self.data_access_output)
         # Add data access and statistics to the processor parameters
         self.transform_params = transform_parameters
         self.transform_params["data_access"] = self.data_access
@@ -163,7 +165,7 @@ class AbstractTransformFileProcessor:
                 self.logger.debug(
                     f"Writing transformed file {self.last_file_name}{self.last_extension} to {output_name}"
                 )
-                save_res, retries = self.data_access.save_file(path=output_name, data=dt)
+                save_res, retries = self.data_access_output.save_file(path=output_name, data=dt)
                 if retries > 0:
                     self._publish_stats({"data access retries": retries})
                 if save_res is None:
@@ -204,7 +206,7 @@ class AbstractTransformFileProcessor:
                         )
                         dt = file_ext[0]
                     file_sizes += len(dt)
-                    save_res, retries = self.data_access.save_file(path=output_name_indexed, data=dt)
+                    save_res, retries = self.data_access_output.save_file(path=output_name_indexed, data=dt)
                     if retries > 0:
                         self._publish_stats({"data access retries": retries})
                     if save_res is None:

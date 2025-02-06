@@ -54,9 +54,16 @@ class HashFilter:
         data_access_factory = params.get("data_access_factory", None)
         if data_access_factory is None:
             self.data_access = None
+            self.data_access_out = None
+            self.hashes = set()
+        elif data_access_factory[0] is None or data_access_factory[1] is None:
+            self.data_access = None
+            self.data_access_out = None
             self.hashes = set()
         else:
-            self.data_access = data_access_factory.create_data_access()
+            self.data_access = data_access_factory[0].create_data_access()
+            self.data_access_out = data_access_factory[1].create_data_access()
+            self.data_access.set_output_data_access(self.data_access_out)
             snapshot = params.get("snapshot", None)
             if snapshot is None:
                 self.hashes = set()
@@ -102,16 +109,20 @@ class HashFilter:
         Snapshot content
         :return: None
         """
-        try:
-            # pickle content
-            b_doc = pickle.dumps(self.hashes)
-            # Save it
-            self.data_access.save_file(
-                f"{SnapshotUtils.get_snapshot_folder(self.data_access)}hash_collector_{self.actor_id}", b_doc
-            )
-        except Exception as e:
-            self.logger.warning(f"Failed to snapshot doc collector {self.actor_id} with exception {e}")
-            raise e
+        if self.data_access_out is not None:
+            try:
+                # pickle content
+                b_doc = pickle.dumps(self.hashes)
+                # Save it
+                self.data_access_out.save_file(
+                    f"{SnapshotUtils.get_snapshot_folder(self.data_access_out)}hash_collector_{self.actor_id}", b_doc
+                )
+            except Exception as e:
+                self.logger.warning(f"Failed to snapshot doc collector {self.actor_id} with exception {e}")
+                raise e
+        else:
+            self.logger.warning(f"data access is not defined - skipping snapshot doc collector {self.actor_id}")
+
 
 
 class EdedupTransformBase(AbstractTableTransform):

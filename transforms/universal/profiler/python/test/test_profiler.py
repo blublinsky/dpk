@@ -33,7 +33,7 @@ class TestProfilerTransform(AbstractTableTransformTest):
         input_tables = get_tables_in_folder(input_dir)
         expected_metadata_list = [{}, {}]
         config = {doc_column_name_key: "contents",
-                  "aggregator": DataAggregator({"data_access_factory": DataAccessFactory()})}
+                  "aggregator": DataAggregator({"data_access_factory": [DataAccessFactory(), DataAccessFactory()]})}
         expected_tables = []
         return [
             (ProfilerTransform(config), input_tables, expected_tables, expected_metadata_list),

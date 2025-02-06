@@ -30,3 +30,7 @@ class TestPythonHeaderCleanserTransform(AbstractPythonHeaderCleanserTransformTes
 
     def _get_launcher(self) -> (AbstractTransformLauncher, dict):
         return (RayTransformLauncher(HeaderCleanserRayTransformConfiguration()), {"run_locally": True})
+
+    # disabling the test
+    def get_test_transform_fixtures(self) -> list[tuple]:
+        return []

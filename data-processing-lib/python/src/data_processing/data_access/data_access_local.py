@@ -56,9 +56,14 @@ class DataAccessLocal(DataAccess):
             self.input_folder = None
             self.output_folder = None
         else:
-            self.input_folder = os.path.abspath(local_config["input_folder"])
-            self.output_folder = os.path.abspath(local_config["output_folder"])
-
+            if local_config["input_folder"] is None:
+                self.input_folder = None
+            else:
+                self.input_folder = os.path.abspath(local_config["input_folder"])
+            if local_config["output_folder"] is None:
+                self.output_folder = None
+            else:
+                self.output_folder = os.path.abspath(local_config["output_folder"])
         logger.debug(f"Local input folder: {self.input_folder}")
         logger.debug(f"Local output folder: {self.output_folder}")
         logger.debug(f"Local data sets: {self.d_sets}")

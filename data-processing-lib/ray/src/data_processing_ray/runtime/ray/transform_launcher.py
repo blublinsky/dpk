@@ -13,6 +13,7 @@
 import argparse
 import sys
 import time
+from typing import Union
 
 import ray
 from data_processing.data_access import DataAccessFactory, DataAccessFactoryBase
@@ -36,7 +37,7 @@ class RayTransformLauncher(AbstractTransformLauncher):
     def __init__(
         self,
         runtime_config: RayTransformRuntimeConfiguration,
-        data_access_factory: DataAccessFactoryBase = DataAccessFactory(),
+        data_access_factory: Union[DataAccessFactoryBase, list[DataAccessFactoryBase]] = DataAccessFactory(),
     ):
         """
         Creates driver
@@ -61,7 +62,7 @@ class RayTransformLauncher(AbstractTransformLauncher):
         """
         This method creates arg parser, fill it with the parameters
         and does parameters validation
-        :return: True id validation passe or False, if not
+        :return: True id validation passes or False, if not
         """
         result = super()._get_parameters(args)
         self.run_locally = args.run_locally

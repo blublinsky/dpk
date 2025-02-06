@@ -70,7 +70,7 @@ class EdedupRuntime(DefaultPythonTransformRuntime):
         self.logger = get_logger(__name__)
 
     def get_transform_config(
-        self, data_access_factory: DataAccessFactoryBase, statistics: TransformStatistics, files: list[str]
+        self, data_access_factory: list[DataAccessFactoryBase], statistics: TransformStatistics, files: list[str]
     ) -> dict[str, Any]:
         """
         Get the dictionary of configuration that will be provided to the transform's initializer.
@@ -87,7 +87,7 @@ class EdedupRuntime(DefaultPythonTransformRuntime):
             snapshot_path = self.params.get(snapshot_directory_key, None)
             if snapshot_path is None or len(snapshot_path) == 0:
                 snapshot_path = (
-                    f"{SnapshotUtils.get_snapshot_folder(data_access_factory.create_data_access())}"
+                    f"{SnapshotUtils.get_snapshot_folder(data_access_factory[1].create_data_access())}"
                     f"hash_collector_1"
                 )
             else:

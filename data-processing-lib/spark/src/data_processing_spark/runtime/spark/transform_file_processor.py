@@ -26,7 +26,7 @@ class SparkTransformFileProcessor(AbstractTransformFileProcessor):
 
     def __init__(
         self,
-        data_access_factory: DataAccessFactoryBase,
+        data_access_factory: list[DataAccessFactoryBase],
         runtime_configuration: SparkTransformRuntimeConfiguration,
         statistics: TransformStatistics,
         is_folder: bool,

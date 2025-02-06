@@ -95,7 +95,7 @@ class ProfilerRuntime(DefaultRayTransformRuntime):
         self.logger = get_logger(__name__)
 
     def get_transform_config(
-        self, data_access_factory: DataAccessFactoryBase, statistics: ActorHandle, files: list[str]
+        self, data_access_factory: list[DataAccessFactoryBase], statistics: ActorHandle, files: list[str]
     ) -> dict[str, Any]:
         """
         Set environment for transform execution

@@ -10,6 +10,7 @@
 # limitations under the License.
 ################################################################################
 import time
+from typing import Union
 
 from data_processing.data_access import DataAccessFactory, DataAccessFactoryBase
 from data_processing.runtime.transform_launcher import AbstractTransformLauncher
@@ -32,7 +33,7 @@ class SparkTransformLauncher(AbstractTransformLauncher):
     def __init__(
         self,
         runtime_config: SparkTransformRuntimeConfiguration,
-        data_access_factory: DataAccessFactoryBase = DataAccessFactory(),
+        data_access_factory: Union[DataAccessFactoryBase, list[DataAccessFactoryBase]] = DataAccessFactory(),
     ):
         """
         Creates driver
